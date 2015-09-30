@@ -53,8 +53,8 @@ output_one = []
 for node in reverse_sorted_list:
     output = list()
     output.append(node[0])
-    output.append(circle_edge_count.get(node[0], 0))
     output.append(node[1])
+    output.append(circle_degree.get(node[0], 0))
     output_one.append(output)
 
 with open("./output/two-ozeros.csv", "wb") as output_file_107:
