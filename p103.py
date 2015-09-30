@@ -75,9 +75,9 @@ with open("./files/698.feat") as ego_feature:
         ct = 0
         node = node_feature_set[0]
         for feature in node_feature_set[1:]:
-            if feature == ego_feature_set[ct]:
+            if feature == 1 and feature == ego_feature_set[ct]:
                 node_feature_698[node] = node_feature_698.get(node, 0) + 1
-                ct += 1
+            ct += 1
         reverse_sorted_list = sorted(node_feature_698.items(), key=operator.itemgetter(1), reverse=True)
 
 output_six = []
@@ -87,6 +87,8 @@ for node in reverse_sorted_list:
     output.append(node_list_698.get(node[0], 0))
     output.append(node[1])
     output_six.append(output)
+
+output_six = sorted(output_six, key=lambda x: x[1], reverse=True)
 
 with open("./output/three-sninee.csv", "wb") as output_file_698:
     writer = csv.writer(output_file_698)
