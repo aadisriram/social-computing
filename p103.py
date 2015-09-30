@@ -23,25 +23,26 @@ with open("./files/414.egofeat") as ego_feature:
         ego_feature_set = [int(i) for i in line.split()]
 
 reverse_sorted_list = {}
-with open("./files/414.feat") as ego_feature:
-    for features in ego_feature:
+with open("./files/414.feat") as node_feature:
+    for features in node_feature:
         node_feature_set = [int(i) for i in features.split()]
         ct = 0
         node = node_feature_set[0]
         for feature in node_feature_set[1:]:
-            if feature == ego_feature_set[ct]:
+            if feature == 1 and feature == ego_feature_set[ct]:
                 node_feature_414[node] = node_feature_414.get(node, 0) + 1
-                ct += 1
-        reverse_sorted_list = sorted(node_feature_414.items(), key=operator.itemgetter(1), reverse=True)
+            ct += 1
+    reverse_sorted_list = sorted(node_feature_414.items(), key=operator.itemgetter(1), reverse=True)
 
 output_four = []
 for node in reverse_sorted_list:
     output = list()
     output.append(node[0])
     output.append(node_list_414.get(node[0], 0))
-    output.append(node[1])
+    output.append(node_feature_414.get(node[0], 0))
     output_four.append(output)
 
+output_four = sorted(output_four, key=lambda x: x[1], reverse=True)
 
 with open("./output/three-fonef.csv", "wb") as output_file_414:
     writer = csv.writer(output_file_414)
@@ -83,9 +84,9 @@ output_six = []
 for node in reverse_sorted_list:
     output = list()
     output.append(node[0])
-    output.append(node_list_414.get(node[0], 0))
+    output.append(node_list_698.get(node[0], 0))
     output.append(node[1])
-    output_four.append(output)
+    output_six.append(output)
 
 with open("./output/three-sninee.csv", "wb") as output_file_698:
     writer = csv.writer(output_file_698)
