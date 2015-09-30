@@ -35,7 +35,7 @@ for node in reverse_sorted_list:
     output.append(node[1])
     output_zero.append(output)
 
-with open("one-zero.csv", "wb") as output_file_zero:
+with open("./output/one-zero.csv", "wb") as output_file_zero:
     writer = csv.writer(output_file_zero)
     writer.writerows(output_zero)
 
@@ -69,6 +69,6 @@ for node in reverse_sorted_list_348:
     output.append(node[1])
     output_348.append(output)
 
-with open("one-tfeight.csv", "wb") as output_file_348:
+with open("./output/one-tfeight.csv", "wb") as output_file_348:
     writer = csv.writer(output_file_348)
     writer.writerows(output_348)
