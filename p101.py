@@ -31,7 +31,7 @@ output_zero = []
 for node in reverse_sorted_list:
     output = list()
     output.append(node[0])
-    output.append(node_edge_count_zero.get(node[0], 0))
+    output.append(node_edge_count_zero.get(node[0], 0)/2)
     output.append(node[1])
     output_zero.append(output)
 
@@ -44,7 +44,9 @@ with open("./files/facebook_combined.txt") as combined_file:
     for line in combined_file:
         x = [int(i) for i in line.split()]
         if x[0] == 348:
-            node_list_zero[x[1]] = 0
+            node_list_348[x[1]] = 0
+        elif x[1] == 348:
+            node_list_348[x[0]] = 0
 
 node_edge_count_348 = {}
 with open("./files/348.edges") as edges_file:
@@ -65,7 +67,7 @@ output_348 = []
 for node in reverse_sorted_list_348:
     output = list()
     output.append(node[0])
-    output.append(node_edge_count_zero.get(node[0], 0))
+    output.append(node_edge_count_348.get(node[0], 0)/2)
     output.append(node[1])
     output_348.append(output)
 
