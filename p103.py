@@ -44,7 +44,7 @@ for node in reverse_sorted_list:
 
 output_four = sorted(output_four, key=lambda x: x[1], reverse=True)
 
-with open("./output/three-fonef.csv", "wb") as output_file_414:
+with open("./output/h3-414.csv", "wb") as output_file_414:
     writer = csv.writer(output_file_414)
     writer.writerows(output_four)
 
@@ -88,8 +88,8 @@ for node in reverse_sorted_list:
     output.append(node[1])
     output_six.append(output)
 
-output_six = sorted(output_six, key=lambda x: x[1], reverse=True)
+output_six = sorted(output_six, key=lambda val: val[1], reverse=True)
 
-with open("./output/three-sninee.csv", "wb") as output_file_698:
+with open("./output/h3-698.csv", "wb") as output_file_698:
     writer = csv.writer(output_file_698)
     writer.writerows(output_six)
