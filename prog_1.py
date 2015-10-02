@@ -12,8 +12,8 @@ with open("./files/facebook_combined.txt") as combined_file:
         if not graph.IsEdge(x[0], x[1]):
             graph.AddEdge(x[0], x[1])
 
-print graph.GetNodes()
-print graph.GetEdges()
+print("Number of nodes : %d") %graph.GetNodes()
+print("Number of edges : %d") % graph.GetEdges()
 blah = TIntFltH()
 halb = TIntPrFltH()
 NodeFrac = float()
