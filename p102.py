@@ -57,7 +57,7 @@ for node in reverse_sorted_list:
     output.append(circle_degree.get(node[0], 0))
     output_one.append(output)
 
-with open("./output/two-ozeros.csv", "wb") as output_file_107:
+with open("./output/h2-107.csv", "wb") as output_file_107:
     writer = csv.writer(output_file_107)
     writer.writerows(output_one)
 
@@ -114,6 +114,6 @@ for node in reverse_sorted_list:
     output.append(circle_degree.get(node[0], 0))
     output_one.append(output)
 
-with open("./output/two-seights.csv", "wb") as output_file_686:
+with open("./output/h2-686.csv", "wb") as output_file_686:
     writer = csv.writer(output_file_686)
     writer.writerows(output_one)
