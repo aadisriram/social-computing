@@ -16,7 +16,7 @@ with open("./files/107.circles") as circles_file:
     for circle in circles_file:
         circle_split = circle.split()
         circle_name = circle_split[0]
-        nodes = []
+        nodes = [107]
         circle_def = [int(i) for i in circle_split[1:]]
         for node in circle_def:
             nodes.append(node)
@@ -24,16 +24,18 @@ with open("./files/107.circles") as circles_file:
 
 circle_edge_count = {}
 for circle in circles_list:
-    count = 0
     node_list_circle = circles_list.get(circle, [])
+    count = 0
     for node in node_list_circle:
         neighbors = node_edges.get(node, [])
         for node_neighbor in neighbors:
             if node_neighbor in node_list_circle:
                 count += 1
+
+    count /= 4
+    count += len(node_list_circle) - 1
     edge_count = len(node_list_circle)
     max_count = edge_count*(edge_count - 1)/2
-    count /= 2
     circle_edge_count[circle] = count/max_count
 
 reverse_sorted_list = {}
@@ -53,7 +55,7 @@ output_one = []
 for node in reverse_sorted_list:
     output = list()
     output.append(node[0])
-    output.append(node[1]/2)
+    output.append(node[1])
     output.append(circle_degree.get(node[0], 0))
     output_one.append(output)
 
@@ -73,7 +75,7 @@ with open("./files/686.circles") as circles_file:
     for circle in circles_file:
         circle_split = circle.split()
         circle_name = circle_split[0]
-        nodes = []
+        nodes = [686]
         circle_def = [int(i) for i in circle_split[1:]]
         for node in circle_def:
             nodes.append(node)
@@ -88,9 +90,10 @@ for circle in circles_list:
         for node_neighbor in neighbors:
             if node_neighbor in node_list_circle:
                 count += 1
+    count /= 4
+    count += len(node_list_circle) - 1
     edge_count = len(node_list_circle)
     max_count = edge_count*(edge_count - 1)/2
-    count /= 2
     circle_edge_count[circle] = count/max_count
 
 reverse_sorted_list = {}
@@ -110,7 +113,7 @@ output_one = []
 for node in reverse_sorted_list:
     output = list()
     output.append(node[0])
-    output.append(node[1]/2)
+    output.append(node[1])
     output.append(circle_degree.get(node[0], 0))
     output_one.append(output)
 

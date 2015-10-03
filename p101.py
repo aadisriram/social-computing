@@ -17,7 +17,6 @@ with open("./files/0.edges") as edges_file:
         x = [int(i) for i in edge.split()]
         node_edge_count_zero[x[0]] = node_edge_count_zero.get(x[0], 0) + 1
         node_edge_count_zero[x[1]] = node_edge_count_zero.get(x[1], 0) + 1
-        # print x
 
 reverse_sorted_list = {}
 with open("./files/0.circles") as circles_file:
@@ -31,7 +30,7 @@ output_zero = []
 for node in reverse_sorted_list:
     output = list()
     output.append(node[0])
-    output.append(node_edge_count_zero.get(node[0], 0)/2)
+    output.append(node_edge_count_zero.get(node[0], 1)/2 + 1)
     output.append(node[1])
     output_zero.append(output)
 
@@ -67,7 +66,7 @@ output_348 = []
 for node in reverse_sorted_list_348:
     output = list()
     output.append(node[0])
-    output.append(node_edge_count_348.get(node[0], 0)/2)
+    output.append(node_edge_count_348.get(node[0], 0)/2 + 1)
     output.append(node[1])
     output_348.append(output)
 
