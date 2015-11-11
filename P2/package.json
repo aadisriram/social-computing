@@ -1,0 +1,11 @@
+{
+  "name": "social-ringer",
+  "version": "1.0.0",
+  "description": "Social ringer application for CSC555",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "aadisriram",
+  "license": "ISC"
+}
