@@ -64,7 +64,7 @@ function getReplyString(incrCount) {
 
 function replyToTweet(tweetText, tweetId) {
 	T.post('statuses/update', { status: tweetText, in_reply_to_status_id: tweetId }, function(err, data, response) {
-					// Tweet pushed, do something?
+		// Tweet pushed, do something?
 	});
 }
 
@@ -90,35 +90,64 @@ stream.on('tweet', function (tweet) {
 				var userName = tweet.user["screen_name"];
 				var tweetText = '@' 
 				 				+ userName 
+				 				+ '\n Name: Aaditya Sriram'
 				 				+ '\n MY_MODE: ' + userContext.ringerMode 
 				 				+ '\n EXPECTED_MODE: ' + userContext.expectedRingerMode
-				 				+ '\n Name: Aaditya Sriram'
 				 				+ '\n #' + tweet["text"].split("#")[2].split(" ")[0] + ' #P2CSC555F15';
 				replyToTweet(tweetText, tweet.id_str);
 			}
 		} else if (tweet["text"].indexOf("Call") > -1) {
-			var splitText = tweet["text"].split("\n");
-			var caller = splitText[1].split(" : ")[1];
-			var urgent = splitText[2].split(" : ")[1];
-			var responseToString = splitText[3];
-
-			if (responseToString == userContext.lastTag) {
-				var callerContext = new CallerContext(caller, urgent);
-				if (utility(userContext, callerContext)) {
-
+			try {
+				var splitText = tweet["text"].split("\n");
+				var caller = splitText[1].split(" : ")[1];
+				var urgent = splitText[2].split(" : ")[1];
+				var responseToString = splitText[3];
+	
+				if (responseToString == userContext.lastTag) {
+					var callerContext = new CallerContext(caller, urgent);
+					var action = 'No';
+					if (utility(userContext, callerContext)) {
+						action = 'Yes';
+					}
+					
+					var tweetText = 'ACTION: ' + action +  ' ' + responseToString;
 				}
+			} catch(err) {
+				console.log(tweet["text"]);
 			}
 		} else if (tweet["text"].indexOf("ACTION") > -1) {
-			if (userLocationMap[tweet.user["screen_name"]] != userContext.location) {
-				var tweetText = '@' + tweet.user["screen_name"] + '\nRESPONSE:';
-				if (tweet["text"].split(" ")[1] == 'yes') {
-					tweetText += ' Negative'
-				} else {
-					tweetText += ' Positive'
+			try {
+				if (userLocationMap[tweet.user["screen_name"]] != userContext.location) {
+					var tweetText = '@' + tweet.user["screen_name"] + '\nName: Aaditya Sriram\nRESPONSE:';
+					if (tweet["text"].split(" ")[1] == 'yes') {
+						tweetText += ' Negative'
+					} else {
+						tweetText += ' Positive'
+					}
+	
+					tweetText += '\n #' + tweet["text"].split("#")[1].split(" ")[0] + ' #P2CSC555F15'
+					replyToTweet(tweetText, tweet.id_str);
 				}
-
-				tweetText += '\n #' + tweet["text"].split("#")[2].split(" ")[0] + ' #P2CSC555F15'
-				replyToTweet(tweetText, tweet.id_str);
+			} catch(err) {
+				
+			}
+		} else if (tweet["text"].indexOf("MY_MODE") > -1) {
+			var splitText = tweet["text"].split("\n");
+			var responseToString = splitText[4];
+			
+			if (responseToString == userContext.lastCheckinTag) {
+				// Neighbor response to your last check-in
+				console.log("Response for : " + responseToString);
+			}
+		} else if (tweet["text"].indexOf("LOCATION") > -1) {
+			var splitText = tweet["text"].split("\n");
+			var responseToString = splitText[3];
+			
+			if (responseToString == userContext.lastCheckinTag) {
+				// Response from location bot to your last check-in
+				var noiseLevel = splitText[2].split(" ")[1];
+				userContext.noiseLevel = noiseLevel;
+				console.log("Noise level : " + noiseLevel);
 			}
 		}
 	}
@@ -131,15 +160,20 @@ process.stdin.on('data', function (data) {
 		var location = "#" + data.split(" ")[1].split('\n')[0];
 		userContext.location = location;
 		userContext.tweetCount++;
-		var replyString = getReplyString();
-		userContext.lastTag = replyString;
+		var replyString = getReplyString(true);
+		userContext.lastCheckinTag = replyString;
 		var tweetText = location + replyString;
 		T.post('statuses/update', { status: 'I checked in at ' + tweetText }, function(err, data, response) {
 			// console.log(data)
 		});
-	} else if (data.indexOf('call')) {
-		T.post('statuses/update', { status: 'CALL ' + getReplyString() }, function(err, data, response) {
+	} else if (data.indexOf('call') > -1) {
+		var tweetText = getReplyString(true);
+		userContext.lastTag = tweetText;
+		T.post('statuses/update', { status: 'CALL ' + tweetText}, function(err, data, response) {
 			// console.log(data)
 		});
+	} else if (data.indexOf('close') > -1) {
+		stream.stop();
+		process.exit(0);
 	}
 });
