@@ -10,11 +10,17 @@ var Location = {
 	PARTY      : "#party"
 }
 
+var Relationships = {
+	FAMILY    : "family", 
+	FRIEND    : "friend", 
+	STRANGER  : "stranger", 
+	COLLEAGUE : "colleague"};
+
 var RelationPriorityType = {
-	FAMILY    : "high",
-	FRIEND    : "high",
-	COLLEAGUE : "medium",
-	STRANGER  : "low"
+	"family"    : "high",
+	"friend"    : "high",
+	"medium"    : "medium",
+	"stranger"  : "low"
 }
 
 var RingerMode = {
@@ -22,9 +28,42 @@ var RingerMode = {
 	LOUD   : "Loud"
 }
 
+var People = {
+	"Anakin"    : Relationships.FAMILY,
+	"Chewbacca" : Relationships.FRIEND,
+	"Han"       : Relationships.FRIEND,
+	"JarJar"    : Relationships.FRIEND,
+	"Jango"     : Relationships.STRANGER,
+	"Leia"      : Relationships.FAMILY,
+	"Luke"      : Relationships.FAMILY,
+	"Padme"     : Relationships.FAMILY,
+	"Mace"      : Relationships.COLLEAGUE,
+	"ObiWan"    : Relationships.COLLEAGUE,
+	"Yoda"      : Relationships.COLLEAGUE
+}
+
+var RelationshipScoring = {
+	"high"   : 0.6,
+	"medium" : 0.3,
+	"low"    : 0.1
+}
+
+var RingerModeScoring = {
+	"Loud"   : 0.7,
+	"Silent" : 0.3
+}
+
+var LocationScoring = {
+	"#hunt"       : 0.05,
+	"#eb2"        : 0.10,
+	"#carmichael" : 0.4,
+	"#oval"       : 0.7,
+	"#party"      : 0.9
+}
+
 class Context {
 	constructor() {
-		this.relation = RelationPriorityType.FAMILY;
+		this.relation = Relationships.FAMILY;
 	}
 }
 
@@ -52,8 +91,11 @@ class CallerContext extends Context {
 var userLocationMap = {};
 
 function utility(userContext, callerContext) {
-	return userContext.ringerMode == RingerMode.LOUD
-			&& callerContext.urgent;
+	var utilityValue = RingerModeScoring[userContext.ringerMode] * 0.1 
+						+ callerContext.urgent * 0.3 
+						+ LocationScoring[userContext.location] * 0.4
+						+ RelationshipScoring[callerContext.relation] * 0.2;
+	return (utilityValue >= Math.Random());
 }
 
 function getReplyString(incrCount) {
@@ -105,6 +147,8 @@ stream.on('tweet', function (tweet) {
 	
 				if (responseToString == userContext.lastTag) {
 					var callerContext = new CallerContext(caller, urgent);
+					callerContext.relation = Relationships[caller];
+					userLocationMap[caller] = userContext.location;
 					var action = 'No';
 					if (utility(userContext, callerContext)) {
 						action = 'Yes';
@@ -159,6 +203,10 @@ process.stdin.on('data', function (data) {
 	if (data.indexOf('checkin') > -1) {
 		var location = "#" + data.split(" ")[1].split('\n')[0];
 		userContext.location = location;
+		if (location == Location.HUNT || loaction == Location.EB2)
+			userContext.ringerMode = RingerMode.Silent;
+		else
+			userContext.ringerMode = RingerMode.Loud;
 		userContext.tweetCount++;
 		var replyString = getReplyString(true);
 		userContext.lastCheckinTag = replyString;

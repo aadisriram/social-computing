@@ -1,4 +1,4 @@
-var text = "ACTION: No #id_knimgao_1 #P2CSC555F15";
+var text = "sender\nCall from : Anakin\nURGENCY : 0/1\n#id_unityID_num #P2CSC555F15";
 
-var splitText = text.split(" ");
-console.log(text.split("#")[1].split(" ")[0]);
+var splitText = text.split("\n");
+console.log(splitText[1].split(" : ")[1]);
