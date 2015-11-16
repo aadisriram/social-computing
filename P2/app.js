@@ -165,10 +165,10 @@ stream.on('tweet', function (tweet) {
 				var userName = tweet.user["screen_name"];
 				var tweetText = '@' 
 				 				+ userName 
-				 				+ '\n Name: Aaditya Sriram'
-				 				+ '\n MY_MODE: ' + userContext.ringerMode 
-				 				+ '\n EXPECTED_MODE: ' + userContext.expectedRingerMode
-				 				+ '\n #' + tweet["text"].split("#")[2].split(" ")[0] + ' #P2CSC555F15';
+				 				+ '\nName: Aaditya Sriram'
+				 				+ '\nMY_MODE: ' + userContext.ringerMode 
+				 				+ '\nEXPECTED_MODE: ' + userContext.expectedRingerMode
+				 				+ '\n#' + tweet["text"].split("#")[2].split(" ")[0] + ' #P2CSC555F15';
 				replyToTweet(tweetText, tweet.id_str);
 			}
 		} else if (tweet["text"].indexOf("Call") > -1) {
