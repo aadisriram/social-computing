@@ -17,15 +17,21 @@ var Relationships = {
 	COLLEAGUE : "colleague"};
 
 var RelationPriorityType = {
-	"family"    : "high",
-	"friend"    : "high",
-	"medium"    : "medium",
-	"stranger"  : "low"
+	"family"       : "high",
+	"friend"       : "high",
+	"colleague"    : "medium",
+	"stranger"     : "low"
 }
 
 var RingerMode = {
 	SILENT : "Silent",
 	LOUD   : "Loud"
+}
+
+var ResponseActions = {
+	POSITIVE : "positive",
+	NEGATIVE : "negative",
+	NEUTRAL  : "neutral"
 }
 
 var People = {
@@ -42,10 +48,19 @@ var People = {
 	"Yoda"      : Relationships.COLLEAGUE
 }
 
+var ResponseToAction = {
+	"#hunt"       : ResponseActions.NEGATIVE, 
+	"#eb2"        : ResponseActions.NEGATIVE,
+	"#carmichael" : ResponseActions.POSITIVE, 
+	"#oval"       : ResponseActions.NEUTRAL, 
+	"#party"      : ResponseActions.POSITIVE
+}
+
 var RelationshipScoring = {
-	"high"   : 0.6,
-	"medium" : 0.3,
-	"low"    : 0.1
+	"high"    : 0.6,
+	"medium"  : 0.3,
+	"low"     : 0.1,
+	undefined : 0.0
 }
 
 var RingerModeScoring = {
@@ -58,7 +73,18 @@ var LocationScoring = {
 	"#eb2"        : 0.10,
 	"#carmichael" : 0.4,
 	"#oval"       : 0.7,
-	"#party"      : 0.9
+	"#party"      : 0.9,
+	undefined     : 0.5
+}
+
+class CallData {
+	constructor(relationPriority, action, location, ringerMode, hashtag) {
+		this.relationPriority = relationPriority;
+		this.action = action;
+		this.checkLocation = location;
+		this.ringerMode = ringerMode;
+		this.hashtag = hashtag;
+	}
 }
 
 class Context {
@@ -70,7 +96,7 @@ class Context {
 class UserContext extends Context {
 	constructor() {
 		super();
-		this.location = Location.HUNT;
+		this.checklocation = Location.HUNT;
 		this.noiseLevel = 4;
 		this.surrounding = [];
 		this.ringerMode = RingerMode.LOUD;
@@ -89,11 +115,12 @@ class CallerContext extends Context {
 }
 
 var userLocationMap = {};
+var callLog = {};
 
 function utility(userContext, callerContext) {
 	var utilityValue = RingerModeScoring[userContext.ringerMode] * 0.1 
 						+ callerContext.urgent * 0.3 
-						+ LocationScoring[userContext.location] * 0.4
+						+ LocationScoring[userContext.checklocation] * 0.4
 						+ RelationshipScoring[callerContext.relation] * 0.2;
 	return (utilityValue >= Math.Random());
 }
@@ -105,9 +132,15 @@ function getReplyString(incrCount) {
 }
 
 function replyToTweet(tweetText, tweetId) {
-	T.post('statuses/update', { status: tweetText, in_reply_to_status_id: tweetId }, function(err, data, response) {
-		// Tweet pushed, do something?
-	});
+	if (tweetId) {
+		T.post('statuses/update', { status: tweetText, in_reply_to_status_id: tweetId }, function(err, data, response) {
+			// Tweet pushed, do something?
+		});
+	} else {
+		T.post('statuses/update', { status: tweetText}, function(err, data, response) {
+			// Tweet pushed, do something?
+		});
+	}
 }
 
 var T = new Twit({
@@ -128,7 +161,7 @@ stream.on('tweet', function (tweet) {
 		if (tweet["text"].indexOf("checked") > -1) { 
 			var userName = tweet.user["screen_name"];
 			userLocationMap[userName] = '#' + tweet["text"].split("#")[1];
-			if(tweet["text"].indexOf(userContext.location) > -1) {
+			if(tweet["text"].indexOf(userContext.checklocation) > -1) {
 				var userName = tweet.user["screen_name"];
 				var tweetText = '@' 
 				 				+ userName 
@@ -141,39 +174,45 @@ stream.on('tweet', function (tweet) {
 		} else if (tweet["text"].indexOf("Call") > -1) {
 			try {
 				var splitText = tweet["text"].split("\n");
-				var caller = splitText[1].split(" : ")[1];
-				var urgent = splitText[2].split(" : ")[1];
+				var caller = splitText[1].split(":")[1].trim();
+				var urgent = splitText[2].split(":")[1].trim();
 				var responseToString = splitText[3];
 	
 				if (responseToString == userContext.lastTag) {
 					var callerContext = new CallerContext(caller, urgent);
-					callerContext.relation = Relationships[caller];
-					userLocationMap[caller] = userContext.location;
+					callerContext.relation = People[caller];
+					userLocationMap[caller] = userContext.checklocation;
 					var action = 'No';
 					if (utility(userContext, callerContext)) {
 						action = 'Yes';
 					}
 					
-					var tweetText = 'ACTION: ' + action +  ' ' + responseToString;
+					userContext.lastAction = action;
+					var responseString = getReplyString(true);
+					callLog[responseString] = new CallData(RelationPriorityType(callerContext.relation), action, userContext.checklocation, userContext.ringerMode, responseString);
+					
+					var tweetText = 'ACTION: ' + action +  ' ' + responseString;
+					replyToTweet(tweetText);
 				}
 			} catch(err) {
 				console.log(tweet["text"]);
 			}
 		} else if (tweet["text"].indexOf("ACTION") > -1) {
 			try {
-				if (userLocationMap[tweet.user["screen_name"]] != userContext.location) {
+				if (userLocationMap[tweet.user["screen_name"]] != userContext.checklocation) {
 					var tweetText = '@' + tweet.user["screen_name"] + '\nName: Aaditya Sriram\nRESPONSE:';
-					if (tweet["text"].split(" ")[1] == 'yes') {
-						tweetText += ' Negative'
+					if (tweet["text"].split(" ")[1] == 'Yes' && userContext.ringerMode == RingerMode.SILENT) {
+						tweetText += ' ' + ResponseToAction[userContext.checklocation];
 					} else {
-						tweetText += ' Positive'
+						tweetText += ' Neutral';
 					}
 	
 					tweetText += '\n #' + tweet["text"].split("#")[1].split(" ")[0] + ' #P2CSC555F15'
 					replyToTweet(tweetText, tweet.id_str);
 				}
 			} catch(err) {
-				
+				console.log("Problem parsing action " + err);
+				console.log(tweet["text"]);
 			}
 		} else if (tweet["text"].indexOf("MY_MODE") > -1) {
 			var splitText = tweet["text"].split("\n");
@@ -193,6 +232,28 @@ stream.on('tweet', function (tweet) {
 				userContext.noiseLevel = noiseLevel;
 				console.log("Noise level : " + noiseLevel);
 			}
+		} else if (tweet["text"].indexOf("RESPONSE") > -1) {
+			var splitText = tweet["text"].split("\n");
+			var response = splitText[2].split(":")[1].trim();
+			var responseToString = splitText[3];
+			
+			var call = callLog[responseToString];
+			var delta = 0.0;
+			var mult = 1;
+			if (call) {
+				
+				if (call.action == "No")
+					mult = -1;
+				if (response == ResponseActions.POSITIVE)
+					delta = +.01;
+				else if (response == ResponseActions.NEGATIVE)
+					delta = -.01;
+					
+				delta *= mult;
+				RelationshipScoring[call.relationPriority] = (RelationshipScoring[call.relationPriority] + delta) > 1 ? 1 : (RelationshipScoring[call.relationPriority] + delta);
+				RingerModeScoring[call.ringerMode] = (RingerModeScoring[call.ringerMode] + delta) > 1 ? 1 : (RingerModeScoring[call.ringerMode] + delta);
+				LocationScoring[call.checklocation] = (LocationScoring[call.checklocation] + delta) > 1 ? 1 : (LocationScoring[call.checklocation] + delta);
+			}
 		}
 	}
 });
@@ -202,12 +263,11 @@ var userContext = new UserContext();
 process.stdin.on('data', function (data) {
 	if (data.indexOf('checkin') > -1) {
 		var location = "#" + data.split(" ")[1].split('\n')[0];
-		userContext.location = location;
-		if (location == Location.HUNT || loaction == Location.EB2)
+		userContext.checklocation = location;
+		if (location == Location.HUNT || location == Location.EB2)
 			userContext.ringerMode = RingerMode.Silent;
 		else
 			userContext.ringerMode = RingerMode.Loud;
-		userContext.tweetCount++;
 		var replyString = getReplyString(true);
 		userContext.lastCheckinTag = replyString;
 		var tweetText = location + replyString;
