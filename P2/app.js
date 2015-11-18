@@ -103,6 +103,7 @@ class UserContext extends Context {
 		this.expectedRingerMode = RingerMode.LOUD;
 		this.tweetCount = 0;
 		this.tweetId = '25076520';
+		this.callCount = 0;
 		this.lastTag = null;
 	}
 }
@@ -125,9 +126,12 @@ function utility(userContext, callerContext) {
 	return (utilityValue >= Math.Random());
 }
 
-function getReplyString(incrCount) {
+function getReplyString(incrCount, includeCallCount) {
 	if (incrCount)
 		userContext.tweetCount++;
+		
+	if (includeCallCount)
+		return ' #id_asriram4_' + userContext.tweetCount + '_' + userContext.callCount++ + ' #P2CSC555F15';
 	return ' #id_asriram4_' + userContext.tweetCount + ' #P2CSC555F15';
 }
 
@@ -188,7 +192,7 @@ stream.on('tweet', function (tweet) {
 					}
 					
 					userContext.lastAction = action;
-					var responseString = getReplyString(true);
+					var responseString = getReplyString(true, true);
 					callLog[responseString] = new CallData(RelationPriorityType(callerContext.relation), action, userContext.checklocation, userContext.ringerMode, responseString);
 					
 					var tweetText = 'ACTION: ' + action +  ' ' + responseString;
@@ -217,6 +221,8 @@ stream.on('tweet', function (tweet) {
 		} else if (tweet["text"].indexOf("MY_MODE") > -1) {
 			var splitText = tweet["text"].split("\n");
 			var responseToString = splitText[4];
+			console.log(splitText);
+			console.log(responseToString + ' ' + userContext.lastCheckinTag);
 			
 			if (responseToString == userContext.lastCheckinTag) {
 				// Neighbor response to your last check-in
@@ -271,15 +277,11 @@ process.stdin.on('data', function (data) {
 		var replyString = getReplyString(true);
 		userContext.lastCheckinTag = replyString;
 		var tweetText = location + replyString;
-		T.post('statuses/update', { status: 'I checked in at ' + tweetText }, function(err, data, response) {
-			// console.log(data)
-		});
+		replyToTweet('I checked in at ' + tweetText);
 	} else if (data.indexOf('call') > -1) {
 		var tweetText = getReplyString(true);
 		userContext.lastTag = tweetText;
-		T.post('statuses/update', { status: 'CALL ' + tweetText}, function(err, data, response) {
-			// console.log(data)
-		});
+		replyToTweet('CALL ' + tweetText);
 	} else if (data.indexOf('close') > -1) {
 		stream.stop();
 		process.exit(0);
