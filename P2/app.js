@@ -147,6 +147,8 @@ function replyToTweet(tweetText, tweetId) {
 	}
 }
 
+
+// Replace keys here
 var T = new Twit({
   consumer_key: 'rVnoiJ3KH5Qv7csdKvZyGAeM4',
   consumer_secret: '3mMAsoTkpFVqSGcGw1kq2VptrJ1XxcRtSIL7t15vlaCH0xXbtB',
@@ -193,7 +195,7 @@ stream.on('tweet', function (tweet) {
 					
 					userContext.lastAction = action;
 					var responseString = getReplyString(true, true);
-					callLog[responseString] = new CallData(RelationPriorityType(callerContext.relation), action, userContext.checklocation, userContext.ringerMode, responseString);
+					callLog[responseString] = new CallData(RelationPriorityType[callerContext.relation], action, userContext.checklocation, userContext.ringerMode, responseString);
 					
 					var tweetText = 'ACTION: ' + action +  ' ' + responseString;
 					replyToTweet(tweetText);
