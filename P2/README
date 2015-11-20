@@ -1,0 +1,21 @@
+To run the code please follow these steps (All instructions for debian/ubuntu):
+
+1. Ensure you have node 4.x+ version installed
+	i  . curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+	ii . sudo apt-get install -y nodejs
+	iii. nodejs -v should display this : v4.2.2
+2. cd to P2 folder and run "npm install twit"
+3. Set twitter keys in lines 114-119 (did not know what env var names would be used so please hardcode this)
+4. from P2 folder run "nodejs app.js"
+5. Use the following commands to change your states:
+	i  . checkin <location> (ex: hunt, eb2)
+	ii . call (enable call acceptance)
+	iii. close (close twitter stream, please do this to avoid twitter blocking you out)
+	iv . exit by pressing ctrl + c
+	v  . type loud to change mode to loud ringer mode
+	vi . type silent to change mode to silent ringer mode
+	vii. type close to exit safely
+6. The terminal will display log messages of accepted actions and also sometime when there is a parsing error of a tweet
+
+
+Once you check-in your tweet will appear with an auto increasing tag for future tweets, once you hit call it would send out the call ready tweet and would also start accepting call requests and responding to them. The bot also responds to other checkins and others actions to calls.

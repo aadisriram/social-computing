@@ -99,7 +99,7 @@ class UserContext extends Context {
 		this.checklocation = Location.HUNT;
 		this.noiseLevel = 4;
 		this.surrounding = [];
-		this.ringerMode = RingerMode.LOUD;
+		this.ringerMode = RingerMode.SILENT;
 		this.expectedRingerMode = RingerMode.LOUD;
 		this.tweetCount = 0;
 		this.tweetId = '25076520';
@@ -204,7 +204,7 @@ stream.on('tweet', function (tweet) {
 		} else if (tweet["text"].indexOf("ACTION") > -1) {
 			try {
 				if (userLocationMap[tweet.user["screen_name"]] != userContext.checklocation) {
-					var tweetText = '@' + tweet.user["screen_name"] + '\nName: Aaditya Sriram\nRESPONSE:';
+					var tweetText = '@' + tweet.user["screen_name"] + '\nRESPONSE:';
 					if (tweet["text"].split(" ")[1] == 'Yes' && userContext.ringerMode == RingerMode.SILENT) {
 						tweetText += ' ' + ResponseToAction[userContext.checklocation];
 					} else {
@@ -239,26 +239,30 @@ stream.on('tweet', function (tweet) {
 				console.log("Noise level : " + noiseLevel);
 			}
 		} else if (tweet["text"].indexOf("RESPONSE") > -1) {
-			var splitText = tweet["text"].split("\n");
-			var response = splitText[2].split(":")[1].trim();
-			var responseToString = splitText[3];
-			
-			var call = callLog[responseToString];
-			var delta = 0.0;
-			var mult = 1;
-			if (call) {
-				
-				if (call.action == "No")
-					mult = -1;
-				if (response == ResponseActions.POSITIVE)
-					delta = +.01;
-				else if (response == ResponseActions.NEGATIVE)
-					delta = -.01;
-					
-				delta *= mult;
-				RelationshipScoring[call.relationPriority] = (RelationshipScoring[call.relationPriority] + delta) > 1 ? 1 : (RelationshipScoring[call.relationPriority] + delta);
-				RingerModeScoring[call.ringerMode] = (RingerModeScoring[call.ringerMode] + delta) > 1 ? 1 : (RingerModeScoring[call.ringerMode] + delta);
-				LocationScoring[call.checklocation] = (LocationScoring[call.checklocation] + delta) > 1 ? 1 : (LocationScoring[call.checklocation] + delta);
+			try {
+				var splitText = tweet["text"].split("\n");
+				var response = splitText[1].split(":")[1].trim();
+				var responseToString = splitText[2];
+
+				var call = callLog[responseToString];
+				var delta = 0.0;
+				var mult = 1;
+				if (call) {
+
+					if (call.action == "No")
+						mult = -1;
+					if (response == ResponseActions.POSITIVE)
+						delta = +.01;
+					else if (response == ResponseActions.NEGATIVE)
+						delta = -.01;
+
+					delta *= mult;
+					RelationshipScoring[call.relationPriority] = (RelationshipScoring[call.relationPriority] + delta) > 1 ? 1 : (RelationshipScoring[call.relationPriority] + delta);
+					RingerModeScoring[call.ringerMode] = (RingerModeScoring[call.ringerMode] + delta) > 1 ? 1 : (RingerModeScoring[call.ringerMode] + delta);
+					LocationScoring[call.checklocation] = (LocationScoring[call.checklocation] + delta) > 1 ? 1 : (LocationScoring[call.checklocation] + delta);
+				}
+			} catch(err) {
+				console.log(tweet["text"] + " " + err);
 			}
 		}
 	}
@@ -285,5 +289,9 @@ process.stdin.on('data', function (data) {
 	} else if (data.indexOf('close') > -1) {
 		stream.stop();
 		process.exit(0);
+	} else if (data.indexOf('silent') >  -1) {
+		userContext.ringerMode = RingerMode.SILENT;
+	} else if (data.indexOf('loud') >  -1) {
+		userContext.ringerMode = RingerMode.LOUD;
 	}
 });
