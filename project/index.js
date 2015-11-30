@@ -50,6 +50,11 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   			memberAction.number_posts++;
   			if (feed_entry.likes) {
   				memberAction.number_likes_received += feed_entry.likes.data.length;
+  				for (var k = 0; k < feed_entry.likes; k++) {
+  				  if (member_map[feed_entry.likes.data[k].id]) {
+  				    member_map[feed_entry.likes.data[k].id].like_count++;
+  				  }
+  				}
   			}
 
   			if (feed_entry.shares) {
@@ -80,7 +85,10 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   			}
 
   			if (feed_entry.link) {
-  				memberAction.number_external_url++;
+  			  if ((feed_entry.type == "photo") || (feed_entry.type == "video"))
+  			    memberAction.number_media_posts++;
+  			  else
+  				  memberAction.number_external_url++;
   			}
 
   			if (feed_entry.story) {
@@ -102,6 +110,40 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   			member_map[feed_entry.from.id] = memberAction;		
   		}
   	}
-	console.log(member_map[4329673775529]);
+  	
+  	var csv_data = '';
+  	csv_data += 'id,name,likes,posts,shares,media posts,external urls,polls,comments,posts shared,posts tagged others,comments tagged others,files uploaded,number likes recd,number comments recd,replies comments,posts got tagged,comments got tagged,number of shares,number flagged,poll participation\n';
+    for (var member_id in member_map) {
+      var member = member_map[member_id];
+      csv_data += 
+                member.id 
+                + "," + member.name 
+                + "," + member.number_likes 
+                + "," + member.number_posts
+                + "," + member.number_shared_posts
+                + "," + member.number_media_posts
+                + "," + member.number_external_url 
+                + "," + member.number_poll_posts 
+                + "," + member.number_comments 
+                + "," + member.posts_shared 
+                + "," + member.posts_tagged_other 
+                + "," + member.comments_tagged_other 
+                + "," + member.files_uploaded 
+                + "," + member.number_likes_received 
+                + "," + member.number_comments_received 
+                + "," + member.number_replies_comments 
+                + "," + member.number_posts_tagged 
+                + "," + member.number_comment_tagged 
+                + "," + member.number_got_shared_post 
+                + "," + member.number_flagged_spam 
+                + "," + member.poll_participation 
+                + "\n";
+    }
+    
+    fs.writeFile('temp.csv', csv_data, function (err,csv) {
+      if (err) {
+        return console.log(err);
+      }
+    });
   });
 });
