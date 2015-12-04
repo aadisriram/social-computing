@@ -29,6 +29,12 @@ class MemberActions {
   }
 };
 
+var summary = {
+  posts: 0,
+  likes: 0,
+  comments: 0
+};
+
 var members;
 fs.readFile('group_members.json', 'utf8', function (err, data) {
   if (err) throw err;
@@ -43,6 +49,7 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   	if (error) throw error;
   	group_feed = JSON.parse(feed_data);
   	for (var i in group_feed.data) {
+  	  summary["posts"]++;
   		// console.log(group_feed.data[i].from.id);
   		var feed_entry = group_feed.data[i];
   		var memberAction = member_map[feed_entry.from.id];
@@ -50,6 +57,7 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   			memberAction.number_posts++;
   			if (feed_entry.likes) {
   				memberAction.number_likes_received += feed_entry.likes.data.length;
+  				summary["likes"] += feed_entry.likes.data.length;
   				for (var k = 0; k < feed_entry.likes; k++) {
   				  if (member_map[feed_entry.likes.data[k].id]) {
   				    member_map[feed_entry.likes.data[k].id].like_count++;
@@ -62,14 +70,17 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   			}
 
   			if (feed_entry.comments) {
+  			  summary["comments"] += feed_entry.comments.data.length;
   				memberAction.number_comments_received += feed_entry.comments.data.length;
   				var comments_data = feed_entry.comments.data;
   				for (var k = 0; k < comments_data.length; k++) {
   					if (comments_data[k].message_tags) {
   						if (member_map[comments_data[k].from.id]) {
   							member_map[comments_data[k].from.id].number_comments++;
+  							summary["comments"]++;
   							member_map[comments_data[k].from.id].comments_tagged_other += comments_data[k].message_tags.length;
   							member_map[comments_data[k].from.id].number_likes_received += comments_data[k].like_count;
+  							summary["likes"] += comments_data[k].like_count;
   						}
   						for (var j = 0; j < comments_data[k].message_tags.length; j++) {
   							if (member_map[comments_data[k].message_tags[j].id]) {
@@ -145,5 +156,7 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
         return console.log(err);
       }
     });
+    
+    console.log(summary);
   });
 });
