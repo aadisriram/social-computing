@@ -3,6 +3,8 @@ var fs = require('fs');
 
 var member_map = {};
 
+var member_text = {};
+
 class MemberActions {
   constructor(id, name) {
     this.id = id;
@@ -36,7 +38,7 @@ var summary = {
 };
 
 var members;
-fs.readFile('group_members.json', 'utf8', function (err, data) {
+fs.readFile('temp_members.json', 'utf8', function (err, data) {
   if (err) throw err;
   members = JSON.parse(data);
   for (var i in members.data) {
@@ -45,7 +47,7 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   }
 
   var group_feed;
-  fs.readFile('group_feed.json', 'utf8', function(error, feed_data) {
+  fs.readFile('tmp.json', 'utf8', function(error, feed_data) {
   	if (error) throw error;
   	group_feed = JSON.parse(feed_data);
   	for (var i in group_feed.data) {
@@ -54,6 +56,9 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   		var feed_entry = group_feed.data[i];
   		var memberAction = member_map[feed_entry.from.id];
   		if (memberAction) {
+        if (!member_text[feed_entry.from.id])
+          member_text[feed_entry.from.id] = []
+        member_text[feed_entry.from.id].push(feed_entry.message);
   			memberAction.number_posts++;
   			if (feed_entry.likes) {
   				memberAction.number_likes_received += feed_entry.likes.data.length;
@@ -76,6 +81,9 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   				for (var k = 0; k < comments_data.length; k++) {
   					if (comments_data[k].message_tags) {
   						if (member_map[comments_data[k].from.id]) {
+                if (!member_text[comments_data[k].from.id])
+                  member_text[comments_data[k].from.id] = []
+                member_text[comments_data[k].from.id].push(comments_data[k].message);
   							member_map[comments_data[k].from.id].number_comments++;
   							summary["comments"]++;
   							member_map[comments_data[k].from.id].comments_tagged_other += comments_data[k].message_tags.length;
@@ -92,7 +100,7 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
   			}
 
   			if (feed_entry.shares) {
-  				memberAction.number_got_shared_post += feed_entry.shares;
+  				memberAction.number_got_shared_post += feed_entry.shares.count;
   			}
 
   			if (feed_entry.link) {
@@ -156,7 +164,25 @@ fs.readFile('group_members.json', 'utf8', function (err, data) {
         return console.log(err);
       }
     });
-    
-    console.log(summary);
+
+    var text_data = '';
+    for (var member_id in member_text) {
+      text_data += member_id + ",";
+      text_data += member_text[member_id].toString();
+      text_data += "\n";
+    }
+
+    fs.writeFile('temp_text.csv', text_data, function (err,csv) {
+      if (err) {
+        return console.log(err);
+      }
+    });
+
+    // var json2csv = require('json2csv');
+ 
+    // json2csv({ data: member_text}, function(err, csv) {
+    //   if (err) console.log(err);
+    //   console.log(csv);
+    // });
   });
 });
